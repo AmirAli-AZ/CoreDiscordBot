@@ -2,6 +2,7 @@ package net.core.corediscordbot.listeners;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -20,12 +21,18 @@ public class WelcomeAndBye extends ListenerAdapter {
         if (textChannel == null)
             return;
 
-        var role = guild.createRole()
-                .setName("member")
-                .setHoisted(false)
-                .setMentionable(false)
-                .setColor(Color.decode("#2196F3"))
-                .complete();
+        Role memberRole;
+        var memberRoles = guild.getRolesByName("Member", true);
+        if (memberRoles.isEmpty()) {
+            memberRole = guild.createRole()
+                    .setName("Member")
+                    .setHoisted(false)
+                    .setMentionable(false)
+                    .setColor(Color.decode("#2196F3"))
+                    .complete();
+        }else {
+            memberRole = memberRoles.get(0);
+        }
 
         var member = event.getMember();
         var welcomeMessageEmbed = new EmbedBuilder()
@@ -36,7 +43,7 @@ public class WelcomeAndBye extends ListenerAdapter {
                 .setTimestamp(Instant.now())
                 .build();
 
-        guild.addRoleToMember(member, role).queue();
+        guild.addRoleToMember(member, memberRole).queue();
         textChannel.sendMessageEmbeds(welcomeMessageEmbed).queue();
     }
 
